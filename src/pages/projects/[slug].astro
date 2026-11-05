@@ -1,0 +1,85 @@
+---
+import Base from "../../layouts/Base.astro";
+import Cover from "../../components/Cover.astro";
+import { getCollection, render } from "astro:content";
+import stats from "../../data/stats.json";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const d = project.data;
+const s = (stats as Record<string, { pushed: string; language: string }>)[project.id];
+const updated = s?.pushed ? `${s.pushed.slice(0, 4)}-${s.pushed.slice(5, 7)}-${s.pushed.slice(8, 10)}` : "";
+const repoUrl = `https://github.com/${d.repo}`;
+---
+
+<Base title={`${d.title} · logic77lhl`} description={d.tagline}>
+  <main>
+    <section class="proj-head">
+      <div class="wrap">
+        <span class="crumb">
+          <a href="/">索引</a>
+          <span>/</span>
+          <a href={`/#g-${d.group}`}>{d.group}</a>
+        </span>
+        <h1>{d.title}</h1>
+        <p class="tagline">{d.tagline}</p>
+        <div class="proj-meta-row">
+          {
+            d.stats.length > 0 ? (
+              <div class="proj-stats">
+                {d.stats.map((item) => (
+                  <div>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div />
+            )
+          }
+          <div class="proj-meta">
+            {d.demo && <a class="btn primary" href={d.demo} target="_blank" rel="noreferrer">打开在线版 ↗</a>}
+            <a class="btn" href={repoUrl} target="_blank" rel="noreferrer">源码 ↗</a>
+            {updated && <span class="btn" style="border-style:dashed;color:var(--dim2)">更新于 {updated}</span>}
+          </div>
+        </div>
+      </div>
+      {
+        d.cover && (
+          <div class="wrap proj-cover">
+            <Cover
+              cover={d.cover}
+              title={d.title}
+              group={d.group}
+              repo={d.repo}
+              demo={d.demo}
+              eager
+              large
+            />
+          </div>
+        )
+      }
+    </section>
+
+    <section class="proj-body">
+      <div class="wrap">
+        <article class="prose">
+          <Content />
+        </article>
+        <div class="proj-foot">
+          <span>{d.stack.length ? d.stack.join(" · ") : s?.language ?? ""}</span>
+          <a href="/">← 回到全部项目</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>

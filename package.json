@@ -1,0 +1,19 @@
+{
+  "name": "logic77lhl-hub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "new": "node scripts/new-post.mjs",
+    "stats": "node scripts/refresh-stats.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.4.5",
+    "sharp": "^0.34.5"
+  }
+}

@@ -1,0 +1,92 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  cover?: string;
+  title: string;
+  group: string;
+  repo?: string;
+  demo?: string;
+  eager?: boolean;
+  /** 大图（项目详情页）：按整栏宽度出图，不按卡片 360px 出图；加窗框、可点开原图 */
+  large?: boolean;
+}
+
+const { cover, title, group, repo, demo, eager = false, large = false } = Astro.props;
+
+const covers = import.meta.glob<ImageMetadata>("../assets/covers/*.png", {
+  eager: true,
+  import: "default",
+});
+
+const src = cover ? covers[`../assets/covers/${cover}`] : undefined;
+const glyph = Array.from(title.trim())[0] ?? "?";
+const repoName = repo?.split("/").pop() ?? "";
+const demoHost = demo ? demo.replace(/^https?:\/\//, "").replace(/\/$/, "") : repoName;
+
+// 卡片最宽约 360，详情页最宽约 1070；两种都要出 2x 图，否则高分屏上是糊的
+const widths = large ? [720, 1070, 1440, 1920] : [360, 480, 720, 960];
+const sizes = large
+  ? "(max-width: 620px) 100vw, (max-width: 1168px) 92vw, 1070px"
+  : "(max-width: 620px) 100vw, (max-width: 900px) 46vw, 360px";
+---
+
+{
+  src && large && (
+    <figure class="shot">
+      <div class="shot-bar">
+        <span class="shot-dots">
+          <i /><i /><i />
+        </span>
+        <span class="shot-url">{demoHost}</span>
+        <a class="shot-open" href={src.src} target="_blank" rel="noreferrer">
+          原图 ↗
+        </a>
+      </div>
+      <Image
+        src={src}
+        alt={`${title} 界面截图`}
+        width={1920}
+        height={1200}
+        format="webp"
+        quality={82}
+        loading="eager"
+        widths={widths}
+        sizes={sizes}
+      />
+    </figure>
+  )
+}
+
+{
+  src && !large && (
+    <div class="cover">
+      <Image
+        src={src}
+        alt={`${title} 界面截图`}
+        width={1920}
+        height={1200}
+        format="webp"
+        quality={82}
+        loading={eager ? "eager" : "lazy"}
+        widths={widths}
+        sizes={sizes}
+      />
+    </div>
+  )
+}
+
+{
+  !src && (
+    <div class="cover">
+      <div class="cover-fallback">
+        <span class="glyph">{glyph}</span>
+        <span class="fb-meta">
+          {repoName}
+          {repoName && " · "}
+          {group}
+        </span>
+      </div>
+    </div>
+  )
+}

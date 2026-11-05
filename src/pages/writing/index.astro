@@ -1,0 +1,65 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("writing", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+const byYear = new Map<string, typeof posts>();
+for (const post of posts) {
+  const y = String(post.data.date.getFullYear());
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(post);
+}
+
+const fmt = (d: Date) =>
+  `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+---
+
+<Base
+  title="写作 · logic77lhl"
+  description="代码之外的输出：笔记、整理、技能说明、随笔。"
+>
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">WRITING · {posts.length} 篇</p>
+        <h1>写下来的<em>另一些</em>。</h1>
+        <p class="lede">
+          有些东西做不出来，只能写出来。这里放笔记、整理、技能说明，还有偶尔的随笔——不全是代码，也不全是结论。
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        {
+          posts.length === 0 && (
+            <p class="empty">还没有第一篇。等一件值得写下来的事。</p>
+          )
+        }
+
+        {[...byYear].map(([year, list]) => (
+          <div class="w-year">
+            <h2 class="w-year-label">{year}</h2>
+            <ul class="w-list">
+              {list.map((post) => (
+                <li>
+                  <a class="w-item" href={`/writing/${post.id}/`}>
+                    <span class="w-date">{fmt(post.data.date)}</span>
+                    <span class="w-kind">{post.data.kind}</span>
+                    <span class="w-main">
+                      <span class="w-title">{post.data.title}</span>
+                      <span class="w-summary">{post.data.summary}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</Base>

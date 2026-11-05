@@ -1,0 +1,72 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("writing", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+
+const fmt = (x: Date) =>
+  `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+
+// 中文按字算，400 字/分钟
+const chars = post.body?.replace(/\s/g, "").length ?? 0;
+const minutes = Math.max(1, Math.round(chars / 400));
+---
+
+<Base title={`${d.title} · logic77lhl`} description={d.summary}>
+  <main>
+    <section class="post-head">
+      <div class="wrap">
+        <span class="crumb">
+          <a href="/writing/">写作</a>
+          <span>/</span>
+          <a href="/writing/">{d.kind}</a>
+        </span>
+        <h1>{d.title}</h1>
+        <p class="post-meta">
+          <time datetime={fmt(d.date)}>{fmt(d.date)}</time>
+          <span>·</span>
+          <span>{d.kind}</span>
+          {minutes <= 60 && (
+            <>
+              <span>·</span>
+              <span>约 {minutes} 分钟</span>
+            </>
+          )}
+        </p>
+      </div>
+    </section>
+
+    <section class="proj-body">
+      <div class="wrap">
+        <article class="prose">
+          <Content />
+        </article>
+
+        {
+          d.link && (
+            <p class="post-link">
+              <a href={d.link} target="_blank" rel="noreferrer">
+                {d.linkLabel ?? "相关链接"} ↗
+              </a>
+            </p>
+          )
+        }
+
+        <div class="proj-foot">
+          <span>{d.tags.length ? d.tags.join(" · ") : ""}</span>
+          <a href="/writing/">← 全部写作</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>

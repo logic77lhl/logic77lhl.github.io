@@ -1,0 +1,15 @@
+[
+  { "date": "2026-08-26", "slug": "daily-stock-metrics", "title": "每日市场指标", "group": "数据" },
+  { "date": "2026-09-08", "slug": "analysis-platform", "title": "插件式分析平台", "group": "工具" },
+  { "date": "2026-09-14", "slug": "star-pulse", "title": "star-pulse · GitHub 星耀榜", "group": "数据" },
+  { "date": "2026-09-17", "slug": "music-selector", "title": "Music Selector", "group": "工具" },
+  { "date": "2026-10-12", "slug": "peppa-parent-kit", "title": "小猪佩奇亲子共读工具包", "group": "内容" },
+  { "date": "2026-10-13", "slug": "zhihu-quant", "title": "zhihu-quant", "group": "数据" },
+  { "date": "2026-10-27", "slug": "film-annual", "title": "电影年鉴 1895—2026", "group": "内容" },
+  { "date": "2026-10-28", "slug": "hf-quest", "title": "HF 探索打卡", "group": "学习" },
+  { "date": "2026-10-29", "slug": "ai-atlas", "title": "AI Atlas · AI 系统地图", "group": "学习" },
+  { "date": "2026-10-29", "slug": "word-checkin", "title": "词途", "group": "学习" },
+  { "date": "2026-10-30", "slug": "stanford-ai-courses", "title": "Stanford AI 课程地图", "group": "学习" },
+  { "date": "2026-11-01", "slug": "opencode-remote-tailscale", "title": "OpenCode Remote", "group": "工具" },
+  { "date": "2026-11-02", "slug": "wxarchive", "title": "wxarchive", "group": "工具" }
+]

@@ -1,0 +1,44 @@
+---
+import Cover from "./Cover.astro";
+
+interface Props {
+  project: {
+    id: string;
+    data: {
+      title: string;
+      tagline: string;
+      group: string;
+      repo: string;
+      demo?: string;
+      cover?: string;
+      stack: string[];
+      featured: number;
+    };
+  };
+  pushed?: string;
+  eager?: boolean;
+}
+
+const { project, pushed, eager = false } = Astro.props;
+const { data } = project;
+
+const updated = pushed ? `${pushed.slice(5, 7)}/${pushed.slice(8, 10)} 更新` : "";
+---
+
+<a class="card" href={`/projects/${project.id}/`}>
+  <Cover cover={data.cover} title={data.title} group={data.group} repo={data.repo} eager={eager} />
+  <div class="card-body">
+    <div class="card-top">
+      <span class={`chip g-${data.group}`}>{data.group}</span>
+      {data.demo && <span class="live-tag"><span class="demo-dot"></span>在线</span>}
+    </div>
+    <h3>{data.title}</h3>
+    <p class="tagline">{data.tagline}</p>
+    <div class="card-foot">
+      <span>{updated}</span>
+      <span class="links">
+        {data.stack.slice(0, 2).map((s) => <span>{s}</span>)}
+      </span>
+    </div>
+  </div>
+</a>

@@ -1,0 +1,207 @@
+---
+import Base from "../layouts/Base.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getCollection } from "astro:content";
+import stats from "../data/stats.json";
+import timeline from "../data/timeline.json";
+
+const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+const featured = projects
+  .filter((p) => p.data.featured > 0)
+  .sort((a, b) => a.data.featured - b.data.featured);
+
+const groups = ["学习", "工具", "数据", "内容"] as const;
+const byGroup = groups
+  .map((g) => ({ name: g, items: projects.filter((p) => p.data.group === g) }))
+  .filter((g) => g.items.length > 0);
+
+const withDemo = projects.filter((p) => p.data.demo).length;
+const pushed = Object.values(stats as Record<string, { pushed: string }>)
+  .map((s) => s.pushed)
+  .sort();
+const latest = pushed.at(-1) ?? "";
+
+const pushOf = (id: string) => (stats as Record<string, { pushed: string }>)[id]?.pushed;
+
+const latestPosts = (await getCollection("writing", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+---
+
+<Base>
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <p class="eyebrow">2026.08 — 2026.11</p>
+        <h1>AI 来了之后，<br />想过的<em>都试了一遍</em>。</h1>
+        <p class="lede">以前一个念头会自己死掉：查资料、搭环境、画界面，想着想着就凉了。AI 把这条路缩成一个下午，于是它们全被做出来。可新问题马上顶上来：做得到，和值得做，不是一回事。</p>
+
+        <aside class="hero-aside">
+          <p class="note">AI 缩短了从念头到成品的距离，却没有缩短从成品到意义的距离。以前我们死于工程，现在死于选择；以前缺的是手，现在缺的是理由。它治好了拖延症，也揭穿了意义匮乏症。</p>
+          <p class="pull">那个下午不是答案，只是把问题还给了我们。当实现变得廉价，你准备拿有限的一生，兑换什么不廉价的东西？</p>
+        </aside>
+
+        <div class="hero-stats">
+          <div>
+            <strong>{projects.length}</strong>
+            <span>Projects</span>
+          </div>
+          <div>
+            <strong>{withDemo}</strong>
+            <span>Live demos</span>
+          </div>
+          <div>
+            <strong>{groups.length}</strong>
+            <span>Topics</span>
+          </div>
+          <div>
+            <strong>{latest.slice(5).replace("-", "/")}</strong>
+            <span>Last update</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section featured">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>先看这三个</h2>
+            <p>这三个推得最远。</p>
+          </div>
+          <span class="count">FEATURED</span>
+        </div>
+        <div class="grid">
+          {
+            featured.map((p) => (
+              <ProjectCard project={p} pushed={pushOf(p.id)} eager />
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section log">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>时间线</h2>
+            <p>十三次尝试，按仓库建起来的那天排。</p>
+          </div>
+          <span class="count">2026.08 — 11</span>
+        </div>
+        <ol class="log-list">
+          {
+            timeline.map((entry) => (
+              <li>
+                <time datetime={entry.date}>{entry.date.slice(5).replace("-", ".")}</time>
+                <a href={`/projects/${entry.slug}/`}>{entry.title}</a>
+                <span class="log-group">{entry.group}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>全部项目</h2>
+            <p>四组，按方向分的，随便翻。</p>
+          </div>
+          <span class="count">{projects.length} REPOS</span>
+        </div>
+
+        <div class="group-nav">
+          {byGroup.map((g) => <a href={`#g-${g.name}`}>{g.name} · {g.items.length}</a>)}
+        </div>
+
+        {
+          byGroup.map((g) => (
+            <div class="group-block" id={`g-${g.name}`}>
+              <h3>{g.name}</h3>
+              <div class="grid">
+                {g.items.map((p) => (
+                  <ProjectCard project={p} pushed={pushOf(p.id)} />
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section" id="writing">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>写下来的</h2>
+            <p>代码之外的输出：笔记、整理、技能说明。</p>
+          </div>
+          <span class="count">WRITING</span>
+        </div>
+
+        <ul class="w-list">
+          {
+            latestPosts.map((post) => (
+              <li>
+                <a class="w-item" href={`/writing/${post.id}/`}>
+                  <span class="w-date">
+                    {String(post.data.date.getMonth() + 1).padStart(2, "0")}.
+                    {String(post.data.date.getDate()).padStart(2, "0")}
+                  </span>
+                  <span class="w-kind">{post.data.kind}</span>
+                  <span class="w-main">
+                    <span class="w-title">{post.data.title}</span>
+                    <span class="w-summary">{post.data.summary}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="more"><a href="/writing/">全部写作 →</a></p>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>关于这一轮</h2>
+            <p>一个人，七十来天，和十三个「做得到」。</p>
+          </div>
+          <span class="count">ABOUT</span>
+        </div>
+
+        <div class="about-grid">
+          <div class="about">
+            <p>我是 logic77lhl。2017 年注册的 GitHub，空了快九年，今年 8 月 26 日才放上第一个仓库——像一间开了九年的店，终于摆出第一件商品。</p>
+            <p>契机是 AI。以前想法会自己死掉，现在它们都能被做出来。十三个，七十来天，大多是一个 HTML 文件、一个 Python 脚本。</p>
+            <p>做出来之后才发现，工具能解决的比我想的少：有几个我自己每天都在用，有几个做完就再没打开过。做出来不等于解决了问题，这一点我以前不太信。</p>
+            <p>所以我不太敢说它们有用。比较确定的是：一个人，不懂设计、不会美工、只有一个下午，能把一件事推到「做出来」；再往后，推不推得动，不归工具管。</p>
+            <p>这一轮不是十三件作品，是十三次把「做得到」逼到「值得做」面前的实验。七十来天，我没攒出产品矩阵，只摸到一条边界：AI 能把我送到成品，剩下的路得自己走。</p>
+          </div>
+
+          <div class="principles">
+            <div class="principle">
+              <strong>工具管不了「想不想」</strong>
+              <span>背单词那个能提醒我打开，管不了我第四天不想背。工具负责启动，不负责续航。</span>
+            </div>
+            <div class="principle">
+              <strong>有些东西做完就够了</strong>
+              <span>有三个，交付那一刻就满足了，之后再没打开过。不是失败，是意义在交付那刻结算完了。它们像一次性烟花，亮过就算数。</span>
+            </div>
+            <div class="principle">
+              <strong>什么都能做，反而更难选</strong>
+              <span>门槛没了以后，判断值不值得，成了唯一的成本。AI 治好了拖延症，也顺手揭穿了意义匮乏症：以前死于工程，现在死于选择。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>
