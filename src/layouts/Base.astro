@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { getCollection } from "astro:content";
 
 interface Props {
   title?: string;
@@ -10,8 +11,11 @@ interface Props {
 const {
   title = "logic77lhl · 十三个尝试",
   description = "AI 来了之后，一个人七十来天做了十三个尝试：背单词、电影年鉴、数据抓取。做得到，和值得做，不是一回事。",
-  image,
+  image = "/og.png",
 } = Astro.props;
+
+// 写作区还没文章时，导航里不出现空入口
+const posts = await getCollection("writing", ({ data }) => !data.draft);
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site) : undefined;
@@ -32,6 +36,7 @@ const ogImage = image ? new URL(image, Astro.site) : undefined;
     <meta property="og:url" content={canonical} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
     <meta name="theme-color" content="#fbf9f5" />
     <meta name="color-scheme" content="light dark" />
 
@@ -60,7 +65,7 @@ const ogImage = image ? new URL(image, Astro.site) : undefined;
         </a>
         <nav class="nav">
           <a href="/#projects">项目</a>
-          <a href="/writing/">写作</a>
+          {posts.length > 0 && <a href="/writing/">写作</a>}
           <a href="/#about">关于</a>
           <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换深色 / 浅色">
             <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

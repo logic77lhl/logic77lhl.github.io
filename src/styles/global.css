@@ -779,6 +779,16 @@ img { display: block; max-width: 100%; }
   color: var(--dim2);
 }
 
+/* ---------- 404 ---------- */
+
+.notfound { padding: 110px 0 130px; }
+.nf-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 34px 0 0;
+}
+
 /* ---------- footer ---------- */
 
 .site-foot {

@@ -18,9 +18,16 @@ const d = project.data;
 const s = (stats as Record<string, { pushed: string; language: string }>)[project.id];
 const updated = s?.pushed ? `${s.pushed.slice(0, 4)}-${s.pushed.slice(5, 7)}-${s.pushed.slice(8, 10)}` : "";
 const repoUrl = `https://github.com/${d.repo}`;
+
+// 有真实截图的，分享卡片就用那张
+const covers = import.meta.glob<ImageMetadata>("../../assets/covers/*.png", {
+  eager: true,
+  import: "default",
+});
+const ogImage = d.cover ? covers[`../../assets/covers/${d.cover}`]?.src : undefined;
 ---
 
-<Base title={`${d.title} · logic77lhl`} description={d.tagline}>
+<Base title={`${d.title} · logic77lhl`} description={d.tagline} image={ogImage}>
   <main>
     <section class="proj-head">
       <div class="wrap">
