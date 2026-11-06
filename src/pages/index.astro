@@ -133,39 +133,41 @@ const latestPosts = (await getCollection("writing", ({ data }) => !data.draft))
       </div>
     </section>
 
-    <section class="section" id="writing">
-      <div class="wrap">
-        <div class="section-head">
-          <div>
-            <h2>写下来的</h2>
-            <p>代码之外的输出：笔记、整理、技能说明。</p>
+    {
+      latestPosts.length > 0 && (
+        <section class="section" id="writing">
+          <div class="wrap">
+            <div class="section-head">
+              <div>
+                <h2>写下来的</h2>
+                <p>代码之外的输出：笔记、整理、技能说明。</p>
+              </div>
+              <span class="count">WRITING</span>
+            </div>
+
+            <ul class="w-list">
+              {latestPosts.map((post) => (
+                <li>
+                  <a class="w-item" href={`/writing/${post.id}/`}>
+                    <span class="w-date">
+                      {String(post.data.date.getMonth() + 1).padStart(2, "0")}.
+                      {String(post.data.date.getDate()).padStart(2, "0")}
+                    </span>
+                    <span class="w-kind">{post.data.kind}</span>
+                    <span class="w-main">
+                      <span class="w-title">{post.data.title}</span>
+                      <span class="w-summary">{post.data.summary}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <p class="more"><a href="/writing/">全部写作 →</a></p>
           </div>
-          <span class="count">WRITING</span>
-        </div>
-
-        <ul class="w-list">
-          {
-            latestPosts.map((post) => (
-              <li>
-                <a class="w-item" href={`/writing/${post.id}/`}>
-                  <span class="w-date">
-                    {String(post.data.date.getMonth() + 1).padStart(2, "0")}.
-                    {String(post.data.date.getDate()).padStart(2, "0")}
-                  </span>
-                  <span class="w-kind">{post.data.kind}</span>
-                  <span class="w-main">
-                    <span class="w-title">{post.data.title}</span>
-                    <span class="w-summary">{post.data.summary}</span>
-                  </span>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-
-        <p class="more"><a href="/writing/">全部写作 →</a></p>
-      </div>
-    </section>
+        </section>
+      )
+    }
 
     <section class="section" id="about">
       <div class="wrap">
