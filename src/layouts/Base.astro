@@ -6,12 +6,14 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  noindex?: boolean;
 }
 
 const {
   title = "logic77lhl · 十三个尝试",
   description = "AI 来了之后，一个人七十来天做了十三个尝试：背单词、电影年鉴、数据抓取。做得到，和值得做，不是一回事。",
   image = "/og.png",
+  noindex = false,
 } = Astro.props;
 
 // 写作区还没文章时，导航里不出现空入口
@@ -29,6 +31,7 @@ const ogImage = image ? new URL(image, Astro.site) : undefined;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
