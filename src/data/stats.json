@@ -1,15 +1,67 @@
 {
-  "word-checkin": { "stars": 0, "pushed": "2026-10-30", "language": "HTML" },
-  "hf-quest": { "stars": 0, "pushed": "2026-10-29", "language": "HTML" },
-  "ai-atlas": { "stars": 0, "pushed": "2026-10-29", "language": "HTML" },
-  "stanford-ai-courses": { "stars": 0, "pushed": "2026-10-31", "language": "Python" },
-  "film-annual": { "stars": 0, "pushed": "2026-11-01", "language": "JavaScript" },
-  "star-pulse": { "stars": 0, "pushed": "2026-11-05", "language": "Python" },
-  "daily-stock-metrics": { "stars": 0, "pushed": "2026-11-04", "language": "Python" },
-  "wxarchive": { "stars": 0, "pushed": "2026-11-03", "language": "Python" },
-  "music-selector": { "stars": 0, "pushed": "2026-09-17", "language": "HTML" },
-  "zhihu-quant": { "stars": 0, "pushed": "2026-10-13", "language": "JavaScript" },
-  "analysis-platform": { "stars": 0, "pushed": "2026-09-08", "language": "Python" },
-  "peppa-parent-kit": { "stars": 0, "pushed": "2026-10-12", "language": "Python" },
-  "opencode-remote-tailscale": { "stars": 0, "pushed": "2026-11-01", "language": "PowerShell" }
+  "ai-atlas": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "HTML"
+  },
+  "analysis-platform": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "Python"
+  },
+  "daily-stock-metrics": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "Python"
+  },
+  "film-annual": {
+    "stars": 0,
+    "pushed": "2026-11-01",
+    "language": "JavaScript"
+  },
+  "hf-quest": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "HTML"
+  },
+  "music-selector": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "HTML"
+  },
+  "opencode-remote-tailscale": {
+    "stars": 0,
+    "pushed": "2026-11-01",
+    "language": "PowerShell"
+  },
+  "peppa-parent-kit": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "Python"
+  },
+  "stanford-ai-courses": {
+    "stars": 0,
+    "pushed": "2026-10-31",
+    "language": "Python"
+  },
+  "star-pulse": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "Python"
+  },
+  "word-checkin": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "HTML"
+  },
+  "wxarchive": {
+    "stars": 0,
+    "pushed": "2026-11-03",
+    "language": "Python"
+  },
+  "zhihu-quant": {
+    "stars": 0,
+    "pushed": "2026-11-06",
+    "language": "JavaScript"
+  }
 }
