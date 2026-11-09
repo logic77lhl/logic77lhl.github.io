@@ -1,3 +1,7 @@
+**中文** | [English](README.en.md)
+
+---
+
 # logic77lhl.github.io
 
 一个把 13 个开源项目放在同一页的索引站。静态生成、无后端、无追踪脚本。
