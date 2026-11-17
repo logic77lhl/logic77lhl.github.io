@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "new": "node scripts/new-post.mjs",
-    "stats": "node scripts/refresh-stats.mjs"
+    "stats": "node scripts/refresh-stats.mjs",
+    "pages": "node scripts/sync-pages.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

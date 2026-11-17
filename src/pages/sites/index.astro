@@ -1,0 +1,733 @@
+---
+import { Image } from "astro:assets";
+import data from "../../data/pages.json";
+
+const sites = data.sites;
+
+const covers = import.meta.glob<ImageMetadata>("../../assets/covers/*.png", {
+  eager: true,
+  import: "default",
+});
+const coverOf = (file: string | null) => (file ? covers[`../../assets/covers/${file}`] : undefined);
+
+/** 分组 → CSS 类名（中文类名能用，但换成 ascii 更省心） */
+const slug: Record<string, string> = { 主站: "hub", 数据: "data", 学习: "learn", 内容: "media", 工具: "tool" };
+const groupOrder = ["主站", "数据", "学习", "内容", "工具"];
+const groups = groupOrder
+  .map((name) => ({ name, slug: slug[name] ?? "tool", count: sites.filter((s) => s.group === name).length }))
+  .filter((g) => g.count > 0);
+
+const dayMs = 86_400_000;
+const daysAgo = (d: string) => Math.max(0, Math.round((Date.now() - new Date(`${d}T00:00:00Z`).getTime()) / dayMs));
+const relLabel = (d: string) => {
+  const n = daysAgo(d);
+  if (n === 0) return "今天";
+  if (n === 1) return "昨天";
+  if (n < 7) return `${n} 天前`;
+  return d.slice(5).replace("-", "/");
+};
+const fmtSize = (kb: number) => (kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`);
+
+const fresh7 = sites.filter((s) => daysAgo(s.pushed) <= 7).length;
+const totalKB = sites.reduce((n, s) => n + s.sizeKB, 0);
+const syncedAt = data.generatedAt.slice(0, 10);
+
+/** 表格按最近更新排序；卡片默认也走这个顺序，前端可改 */
+const byPushed = [...sites].sort((a, b) => b.pushed.localeCompare(a.pushed));
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>全部站点 · logic77lhl</title>
+    <meta
+      name="description"
+      content="logic77lhl 名下全部 GitHub Pages 站点的聚合索引：在线状态、最近更新、技术栈与体积。"
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0c0e14" />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (() => {
+        let theme = "dark";
+        try {
+          const saved = localStorage.getItem("theme");
+          if (saved === "light" || saved === "dark") theme = saved;
+        } catch {}
+        document.documentElement.dataset.theme = theme;
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#0c0e14" : "#f4f5f8");
+      })();
+    </script>
+    <style is:global>
+      /* ── 设计令牌：与 WorkBuddy 控制台同一套（冷石墨 + 单一靛蓝强调）────── */
+      :root {
+        --bg: #0c0e14; --surface: #14171f; --surface-2: #1a1e28; --raise: #202531;
+        --line: #262c3a; --line-soft: #1e232e;
+        --ink: #e8ebf2; --ink-2: #a8b0c2; --ink-3: #6b7488;
+        --accent: #5b7cfa; --accent-ink: #fff; --accent-soft: rgba(91, 124, 250, 0.13);
+        --ok: #3ddc97; --ok-soft: rgba(61, 220, 151, 0.12);
+        --warn: #f5b544; --warn-soft: rgba(245, 181, 68, 0.12);
+        --bad: #f0655f; --bad-soft: rgba(240, 101, 95, 0.12);
+        --violet: #a78bfa; --violet-soft: rgba(167, 139, 250, 0.13);
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+        --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+        --sans: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+      [data-theme="light"] {
+        --bg: #f4f5f8; --surface: #fff; --surface-2: #f8f9fb; --raise: #fff;
+        --line: #e2e5ec; --line-soft: #eceef3;
+        --ink: #14171f; --ink-2: #545c6e; --ink-3: #8b93a5;
+        --accent: #3d5fe0; --accent-ink: #fff; --accent-soft: rgba(61, 95, 224, 0.09);
+        --ok: #0f9d63; --ok-soft: rgba(15, 157, 99, 0.1);
+        --warn: #b47611; --warn-soft: rgba(180, 118, 17, 0.11);
+        --bad: #cf3b34; --bad-soft: rgba(207, 59, 52, 0.09);
+        --violet: #7c5cd6; --violet-soft: rgba(124, 92, 214, 0.1);
+        --shadow: 0 1px 2px rgba(16, 20, 32, 0.06), 0 8px 24px -14px rgba(16, 20, 32, 0.14);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      [hidden] { display: none !important; }
+      html, body { height: 100%; }
+      body {
+        background: var(--bg); color: var(--ink); font: 14px/1.55 var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection { background: var(--accent-soft); }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+      a { color: inherit; }
+
+      /* ── 壳层 ─────────────────────────────────────────────────────────── */
+      .shell { display: grid; grid-template-columns: 208px 1fr; min-height: 100vh; }
+      .nav {
+        background: var(--surface); border-right: 1px solid var(--line);
+        display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+      }
+      .brand { padding: 20px 18px 14px; border-bottom: 1px solid var(--line-soft); }
+      .brand a { text-decoration: none; }
+      .brand .name { font-weight: 650; letter-spacing: -0.01em; font-size: 15px; }
+      .brand .name:hover { color: var(--accent); }
+      .brand .sub { color: var(--ink-3); font-size: 11.5px; font-family: var(--mono); margin-top: 3px; }
+      .nav .back { padding: 9px 18px; font-size: 12.5px; border-bottom: 1px solid var(--line-soft); }
+      .nav .back a { color: var(--ink-3); text-decoration: none; }
+      .nav .back a:hover { color: var(--accent); }
+      .nav ul { list-style: none; padding: 10px 8px; flex: 1; overflow-y: auto; }
+      .nav li { margin-bottom: 2px; }
+      .nav button {
+        display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+        padding: 8px 11px; color: var(--ink-2); background: none; border: 1px solid transparent;
+        border-radius: 7px; font: 13.5px/1.4 var(--sans); cursor: pointer;
+      }
+      .nav button:hover { background: var(--surface-2); color: var(--ink); border-color: transparent; }
+      .nav button.on { background: var(--accent-soft); color: var(--accent); font-weight: 550; }
+      .nav button .cnt { margin-left: auto; font: 11.5px var(--mono); color: var(--ink-3); }
+      .nav button.on .cnt { color: var(--accent); }
+      .nav button .sw { width: 7px; height: 7px; border-radius: 2px; flex: none; background: var(--ink-3); }
+      .sw.hub { background: var(--accent); } .sw.data { background: var(--ok); }
+      .sw.learn { background: var(--warn); } .sw.media { background: var(--violet); }
+      .sw.tool { background: var(--ink-3); }
+      .nav .sig { padding: 12px 16px; border-top: 1px solid var(--line-soft); font-size: 11.5px; color: var(--ink-3); }
+      .nav .sig .row { display: flex; align-items: center; gap: 7px; }
+      .nav .sig .row + .row { margin-top: 5px; }
+      .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); flex: none; }
+      .pulse.on { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+      .pulse.part { background: var(--warn); }
+      .pulse.off { background: var(--bad); }
+
+      .main { min-width: 0; display: flex; flex-direction: column; }
+      .topbar {
+        display: flex; align-items: center; gap: 14px; padding: 14px 24px;
+        border-bottom: 1px solid var(--line); background: var(--surface);
+        position: sticky; top: 0; z-index: 20;
+      }
+      .topbar h1 { font-size: 15.5px; font-weight: 620; letter-spacing: -0.01em; }
+      .topbar .sep { color: var(--ink-3); }
+      .topbar .meta { color: var(--ink-3); font-size: 12px; font-family: var(--mono); }
+      .topbar .grow { flex: 1; }
+      .view { padding: 22px 24px 56px; max-width: 1560px; margin: 0 auto; width: 100%; }
+
+      button, .btn {
+        font: inherit; color: var(--ink); background: var(--surface-2);
+        border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px;
+        cursor: pointer; text-decoration: none; transition: border-color 0.12s, background 0.12s;
+      }
+      button:hover:not(:disabled), .btn:hover { border-color: var(--accent); }
+      button:disabled { opacity: 0.55; cursor: default; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 550; }
+      button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+      button.ghost { background: transparent; }
+      button.xs { padding: 3.5px 9px; font-size: 12.5px; border-radius: 6px; white-space: nowrap; }
+      button.icon { padding: 5px 9px; }
+
+      /* ── 统计条 ───────────────────────────────────────────────────────── */
+      .stats {
+        display: grid; grid-template-columns: repeat(6, 1fr);
+        border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
+        overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow);
+      }
+      .stat { padding: 14px 17px; border-right: 1px solid var(--line-soft); }
+      .stat:last-child { border-right: none; }
+      .stat .v {
+        font: 600 26px/1.15 var(--mono); font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em; white-space: nowrap;
+      }
+      .stat .k { color: var(--ink-3); font-size: 11.5px; margin-top: 5px; }
+      .stat.good .v { color: var(--ok); }
+      .stat.warn .v { color: var(--warn); }
+      .stat.bad .v { color: var(--bad); }
+      @media (max-width: 980px) { .stats { grid-template-columns: repeat(3, 1fr); } .stat:nth-child(3n) { border-right: none; } .stat { border-bottom: 1px solid var(--line-soft); } }
+      @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } .stat:nth-child(3n) { border-right: 1px solid var(--line-soft); } .stat:nth-child(2n) { border-right: none; } }
+
+      /* ── 面板块 ───────────────────────────────────────────────────────── */
+      .box {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 11px;
+        box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden;
+      }
+      .box > header {
+        display: flex; align-items: center; gap: 12px; padding: 12px 17px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .box > header h2 { font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+      .box > header .hint { font-size: 11.5px; font-weight: 400; color: var(--ink-3); margin-left: 6px; }
+      .box > header .grow { flex: 1; }
+      .box > header .note {
+        color: var(--ink-3); font-size: 12px; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+      }
+
+      /* ── 筛选栏 ───────────────────────────────────────────────────────── */
+      .fbar {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        padding: 10px 17px; border-bottom: 1px solid var(--line-soft); background: var(--surface-2);
+      }
+      .fbar input, .fbar select {
+        font: inherit; color: var(--ink); background: var(--surface);
+        border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; font-size: 12.5px;
+      }
+      .fbar input:focus, .fbar select:focus { outline: none; border-color: var(--accent); }
+      .fbar input[type="search"] { min-width: 200px; flex: 0 1 280px; }
+      .fbar select { cursor: pointer; }
+      .fbar .grow { flex: 1; }
+      .fbar .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+      .fbar .chk input { accent-color: var(--accent); }
+      .fbar .note { color: var(--ink-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+      /* ── 站点卡片 ─────────────────────────────────────────────────────── */
+      .cards {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(296px, 1fr));
+        gap: 14px;
+      }
+      .site {
+        position: relative;
+        display: flex; flex-direction: column; min-width: 0;
+        background: var(--surface-2); border: 1px solid var(--line-soft);
+        border-radius: 11px; overflow: hidden; text-decoration: none;
+        transition: border-color 0.15s, transform 0.15s;
+      }
+      .site:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); transform: translateY(-1px); }
+      /* 整卡可点：标题链接的伪元素铺满卡片，repo 链接单独抬到上层 */
+      .site h3 a::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 11px; }
+      .shot {
+        position: relative; display: block; overflow: hidden;
+        border-bottom: 1px solid var(--line-soft); background: var(--raise);
+        aspect-ratio: 16 / 10;
+      }
+      .shot img {
+        display: block; width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.45s ease;
+      }
+      .site:hover .shot img { transform: scale(1.035); }
+      .shot-fb {
+        position: absolute; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 6px;
+        background:
+          radial-gradient(120% 90% at 50% 0%, var(--accent-soft), transparent 62%),
+          var(--surface-2);
+      }
+      .shot-fb .glyph { font: 600 40px/1 var(--mono); color: var(--accent); }
+      .shot-fb em { font: 11px var(--mono); font-style: normal; color: var(--ink-3); }
+      .pdot {
+        position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%;
+        background: var(--ink-3); box-shadow: 0 0 0 3px rgba(12, 14, 20, 0.6);
+      }
+      .pdot.on { background: var(--ok); }
+      .pdot.off { background: var(--bad); }
+      .pdot.wait { background: var(--ink-3); animation: breathe 1.4s ease-in-out infinite; }
+      @keyframes breathe { 50% { opacity: 0.35; } }
+
+      .body { display: flex; flex-direction: column; gap: 7px; padding: 12px 14px 13px; flex: 1; }
+      .rowchips { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+      .chip {
+        display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px;
+        border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap;
+        background: var(--surface); color: var(--ink-3); border: 1px solid var(--line);
+      }
+      .chip.plain { background: none; border-color: transparent; padding-left: 0; }
+      .chip.g-hub { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+      .chip.g-data { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+      .chip.g-learn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+      .chip.g-media { background: var(--violet-soft); color: var(--violet); border-color: transparent; }
+      .site h3 { font-size: 14.5px; font-weight: 620; letter-spacing: -0.01em; line-height: 1.35; }
+      .site h3 a { text-decoration: none; }
+      .site:hover h3 a { color: var(--accent); }
+      .tagline {
+        font-size: 12.5px; color: var(--ink-2); line-height: 1.5; flex: 1;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      }
+      .foot {
+        display: flex; align-items: center; gap: 10px; margin-top: 2px;
+        font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums;
+      }
+      .foot .mono { font-family: var(--mono); }
+      .foot .spacer { flex: 1; }
+      .foot .repo { font-size: 11.5px; color: var(--ink-3); text-decoration: none; position: relative; z-index: 2; }
+      .foot .repo:hover { color: var(--accent); }
+
+      .empty { padding: 44px 20px; text-align: center; color: var(--ink-3); }
+      .empty .big { font-size: 14px; color: var(--ink-2); margin-bottom: 6px; }
+      .pad { padding: 16px 17px 18px; }
+
+      /* ── 数据表（签名元素：左侧分类色条 + 等宽数字）────────────────────── */
+      .tbl-wrap { overflow-x: auto; }
+      .acc { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+      .acc th {
+        text-align: left; font-weight: 500; font-size: 11.5px; color: var(--ink-3);
+        padding: 9px 11px; border-bottom: 1px solid var(--line); white-space: nowrap;
+      }
+      .acc td { padding: 10px 11px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+      .acc tbody tr:last-child td { border-bottom: none; }
+      .acc tbody tr:hover { background: var(--surface-2); }
+      .acc .mark { width: 3px; min-width: 3px; padding: 0; }
+      .acc .mark i { display: block; width: 3px; min-height: 34px; background: var(--ink-3); }
+      .acc .mark i.hub { background: var(--accent); }
+      .acc .mark i.data { background: var(--ok); }
+      .acc .mark i.learn { background: var(--warn); }
+      .acc .mark i.media { background: var(--violet); }
+      .acc .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .acc .r { text-align: right; }
+      .acc .who { min-width: 190px; }
+      .acc .who .nm { font-weight: 550; }
+      .acc .who .nm a { text-decoration: none; }
+      .acc .who .nm a:hover { color: var(--accent); }
+      .acc .who .id { font: 11.5px var(--mono); color: var(--ink-3); margin-top: 1px; }
+      .acc .rel { font-size: 11px; color: var(--ink-3); margin-left: 6px; font-style: normal; }
+      .tag {
+        display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px;
+        border-radius: 999px; font-size: 11.5px; font-weight: 500; white-space: nowrap;
+      }
+      .tag.ok { background: var(--ok-soft); color: var(--ok); }
+      .tag.bad { background: var(--bad-soft); color: var(--bad); }
+      .tag.mute { background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
+      .open { text-decoration: none; color: var(--ink-2); font-size: 12.5px; white-space: nowrap; }
+      .open:hover { color: var(--accent); }
+
+      .footnote { color: var(--ink-3); font-size: 11.5px; line-height: 1.7; }
+      .footnote code { font-family: var(--mono); color: var(--ink-2); }
+
+      @media (max-width: 860px) {
+        .shell { grid-template-columns: minmax(0, 1fr); }
+        /* 窄屏把左栏摊成一整块：品牌 / 状态 / 分类条三行。用 grid 而不是 flex-wrap，
+           因为 flex 里 ul 的 flex-basis:100% 在容器宽度不确定时会退化成 max-content，
+           把整页撑出横向滚动条。 */
+        .nav {
+          position: static; height: auto; display: grid;
+          grid-template-columns: 1fr auto;
+          grid-template-areas: "brand sig" "back back" "links links";
+          align-items: center; min-width: 0;
+        }
+        .brand { grid-area: brand; border: none; padding: 14px 16px; }
+        .nav .back { grid-area: back; border: none; padding: 0 16px 10px; }
+        .nav ul { grid-area: links; display: flex; gap: 4px; padding: 8px 12px; overflow-x: auto; min-width: 0; }
+        .nav button { white-space: nowrap; width: auto; }
+        .nav .sig { grid-area: sig; border: none; padding: 0 16px; text-align: right; }
+        .nav .sig .row { justify-content: flex-end; }
+        .nav .sig .row + .row { margin-top: 2px; }
+        .topbar { flex-wrap: wrap; padding: 12px 16px; }
+        .view { padding: 16px 16px 44px; }
+        .box > header { flex-wrap: wrap; }
+        .box > header .note { white-space: normal; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <nav class="nav">
+        <div class="brand">
+          <a href="/"><div class="name">logic77lhl</div></a>
+          <div class="sub">PAGES INDEX</div>
+        </div>
+        <div class="back"><a href="/">← 回主站</a></div>
+        <ul id="navGroups">
+          <li>
+            <button type="button" class="on" data-group="">
+              <span class="sw"></span>全部站点<span class="cnt">{sites.length}</span>
+            </button>
+          </li>
+          {
+            groups.map((g) => (
+              <li>
+                <button type="button" data-group={g.name}>
+                  <span class={`sw ${g.slug}`} />
+                  {g.name}
+                  <span class="cnt">{g.count}</span>
+                </button>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="sig">
+          <div class="row"><span class="pulse" id="sigPulse"></span><span id="sigText">检测中…</span></div>
+          <div class="row"><span id="sigMeta">同步于 {syncedAt}</span></div>
+        </div>
+      </nav>
+
+      <div class="main">
+        <div class="topbar">
+          <h1>全部站点</h1>
+          <span class="sep">/</span>
+          <span class="meta" id="topMeta">{sites.length} 个 Pages · 同步于 {syncedAt}</span>
+          <div class="grow"></div>
+          <button class="icon ghost" id="btnTheme" title="切换明暗" aria-label="切换明暗">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.6 5.6 0 1 0 6.8 6.8z"></path>
+            </svg>
+          </button>
+          <button id="btnProbe">检测在线</button>
+          <a class="btn primary" href="https://github.com/logic77lhl" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
+
+        <section class="view">
+          <div class="stats">
+            <div class="stat"><div class="v">{sites.length}</div><div class="k">站点总数</div></div>
+            <div class="stat good"><div class="v" id="sOn">–</div><div class="k">在线</div></div>
+            <div class="stat bad"><div class="v" id="sOff">–</div><div class="k">离线 / 不可达</div></div>
+            <div class="stat warn"><div class="v">{fresh7}</div><div class="k">7 天内更新</div></div>
+            <div class="stat"><div class="v">{(totalKB / 1024).toFixed(0)}<span style="font-size:14px;color:var(--ink-3)"> MB</span></div><div class="k">仓库体积合计</div></div>
+            <div class="stat"><div class="v">{groups.length}</div><div class="k">分类</div></div>
+          </div>
+
+          <div class="box" id="gridBox">
+            <header>
+              <h2>站点<span class="hint">按分类、技术栈、描述检索</span></h2>
+              <span class="grow"></span>
+              <span class="note">点封面直达站点</span>
+            </header>
+            <div class="fbar">
+              <input id="q" type="search" placeholder="搜索站点 / 技术栈 / 描述（按 / 聚焦）" aria-label="搜索站点" />
+              <select id="fGroup" aria-label="按分类筛选">
+                <option value="">全部分类</option>
+                {groups.map((g) => <option value={g.name}>{g.name}（{g.count}）</option>)}
+              </select>
+              <select id="fSort" aria-label="排序方式">
+                <option value="order">默认顺序</option>
+                <option value="pushed">最近更新</option>
+                <option value="name">名称 A → Z</option>
+                <option value="size">体积 大 → 小</option>
+                <option value="group">按分类</option>
+              </select>
+              <label class="chk"><input type="checkbox" id="fOnline" />只看在线</label>
+              <span class="grow"></span>
+              <span class="note" id="fCount">{sites.length} / {sites.length}</span>
+              <button class="xs ghost" id="btnReset">重置</button>
+            </div>
+            <div class="pad">
+              <div class="cards" id="cards">
+                {
+                  sites.map((s, i) => {
+                    const cover = coverOf(s.cover);
+                    const search = [s.title, s.tagline, s.name, s.group, s.lang, ...s.stack, ...s.topics]
+                      .join(" ")
+                      .toLowerCase();
+                    return (
+                      <article
+                        class="site"
+                        data-group={s.group}
+                        data-url={s.url}
+                        data-pushed={s.pushed}
+                        data-size={s.sizeKB}
+                        data-order={s.order}
+                        data-title={s.title}
+                        data-search={search}
+                      >
+                        <a class="shot" href={s.url} target="_blank" rel="noreferrer" aria-label={`打开 ${s.title}`}>
+                          {cover ? (
+                            <Image
+                              src={cover}
+                              alt={`${s.title} 首页截图`}
+                              width={1600}
+                              height={1000}
+                              format="webp"
+                              quality={80}
+                              widths={[400, 640, 960]}
+                              sizes="(max-width: 700px) 92vw, (max-width: 1180px) 46vw, 340px"
+                              loading={i < 3 ? "eager" : "lazy"}
+                            />
+                          ) : (
+                            <div class="shot-fb">
+                              <span class="glyph">{Array.from(s.title)[0]}</span>
+                              <em>{s.name}</em>
+                            </div>
+                          )}
+                          <i class={`pdot`} data-probe={s.url} title="在线状态未检测" />
+                        </a>
+                        <div class="body">
+                          <div class="rowchips">
+                            <span class={`chip g-${slug[s.group] ?? "tool"}`}>{s.group}</span>
+                            {s.stack.slice(0, 2).map((t) => <span class="chip plain">{t}</span>)}
+                          </div>
+                          <h3><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></h3>
+                          <p class="tagline">{s.tagline}</p>
+                          <div class="foot">
+                            <span class="mono">{relLabel(s.pushed)}</span>
+                            <span class="mono">{fmtSize(s.sizeKB)}</span>
+                            <span class="spacer"></span>
+                            <a class="repo" href={`https://github.com/${s.repo}`} target="_blank" rel="noreferrer">repo ↗</a>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })
+                }
+              </div>
+              <div class="empty" id="empty" hidden>
+                <div class="big">没有匹配的站点</div>
+                <div>换个关键词，或者把筛选条件重置掉。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="box">
+            <header>
+              <h2>全部站点<span class="hint">按最近更新排序，不受上面的筛选影响</span></h2>
+              <span class="grow"></span>
+              <span class="note">体积 = 仓库大小，不是页面传输量</span>
+            </header>
+            <div class="tbl-wrap">
+              <table class="acc">
+                <thead>
+                  <tr>
+                    <th class="mark" aria-hidden="true"></th>
+                    <th>站点</th>
+                    <th>分类</th>
+                    <th>状态</th>
+                    <th>最近更新</th>
+                    <th>语言</th>
+                    <th class="r">体积</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    byPushed.map((s) => (
+                      <tr>
+                        <td class="mark"><i class={slug[s.group] ?? "tool"} /></td>
+                        <td class="who">
+                          <div class="nm"><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></div>
+                          <div class="id">{s.repo}</div>
+                        </td>
+                        <td><span class={`chip g-${slug[s.group] ?? "tool"}`}>{s.group}</span></td>
+                        <td><span class="tag mute" data-ptag={s.url}>待检测</span></td>
+                        <td class="num">
+                          {s.pushed}
+                          <em class="rel">{relLabel(s.pushed)}</em>
+                        </td>
+                        <td class="num">{s.lang || "—"}</td>
+                        <td class="num r">{fmtSize(s.sizeKB)}</td>
+                        <td><a class="open" href={s.url} target="_blank" rel="noreferrer">打开 ↗</a></td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="footnote">
+            数据：GitHub API（<code>repos?type=owner</code> → 过滤 <code>has_pages</code>）· 同步于 {syncedAt} ·
+            每日由 GitHub Actions 重跑 <code>scripts/sync-pages.mjs</code> 后重新部署。<br />
+            在线状态是浏览器端可达性探测（<code>fetch no-cors</code> + 8s 超时）：只判断「能不能连上」，
+            分不出 200 和 404；跨域也拿不到状态码与响应时间。
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+        /* ── 主题 ─────────────────────────────────────────────────────── */
+        const themeBtn = $("#btnTheme");
+        themeBtn.addEventListener("click", () => {
+          const root = document.documentElement;
+          const next = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", next === "dark" ? "#0c0e14" : "#f4f5f8");
+          try {
+            localStorage.setItem("theme", next);
+          } catch {}
+        });
+
+        /* ── 在线探测 ─────────────────────────────────────────────────── */
+        const dots = $$("[data-probe]");
+        const tags = $$("[data-ptag]");
+        const urls = [...new Set(dots.map((d) => d.dataset.probe))];
+        const state = new Map();
+        const label = { on: "在线", off: "不可达", wait: "检测中" };
+        const tagClass = { on: "tag ok", off: "tag bad", wait: "tag mute" };
+
+        const setState = (url, st) => {
+          state.set(url, st);
+          for (const d of dots) {
+            if (d.dataset.probe !== url) continue;
+            d.className = `pdot ${st}`;
+            d.title = `在线状态：${label[st]}`;
+          }
+          for (const t of tags) {
+            if (t.dataset.ptag !== url) continue;
+            t.className = tagClass[st];
+            t.textContent = label[st];
+          }
+        };
+
+        const probe = async (url) => {
+          const ctl = new AbortController();
+          const timer = setTimeout(() => ctl.abort(), 8000);
+          try {
+            await fetch(`${url}${url.includes("?") ? "&" : "?"}_probe=${Date.now()}`, {
+              mode: "no-cors",
+              cache: "no-store",
+              redirect: "follow",
+              signal: ctl.signal,
+            });
+            return "on";
+          } catch {
+            return "off";
+          } finally {
+            clearTimeout(timer);
+          }
+        };
+
+        const sigPulse = $("#sigPulse");
+        const sigText = $("#sigText");
+        const btnProbe = $("#btnProbe");
+
+        const runProbe = async () => {
+          if (runProbe.running) return;
+          runProbe.running = true;
+          btnProbe.disabled = true;
+          btnProbe.textContent = "检测中…";
+          urls.forEach((u) => setState(u, "wait"));
+
+          let on = 0;
+          await Promise.all(
+            urls.map(async (u) => {
+              const st = await probe(u);
+              setState(u, st);
+              if (st === "on") on += 1;
+            }),
+          );
+
+          const off = urls.length - on;
+          $("#sOn").textContent = on;
+          $("#sOff").textContent = off;
+          sigPulse.className = `pulse ${off === 0 ? "on" : on === 0 ? "off" : "part"}`;
+          sigText.textContent = `${on} / ${urls.length} 在线`;
+          btnProbe.disabled = false;
+          btnProbe.textContent = "重新检测";
+          runProbe.running = false;
+          apply();
+        };
+
+        btnProbe.addEventListener("click", runProbe);
+
+        /* ── 筛选 + 排序 ──────────────────────────────────────────────── */
+        const cards = $$("#cards .site");
+        const grid = $("#cards");
+        const q = $("#q");
+        const fGroup = $("#fGroup");
+        const fSort = $("#fSort");
+        const fOnline = $("#fOnline");
+        const fCount = $("#fCount");
+        const empty = $("#empty");
+
+        const sortCards = () => {
+          const mode = fSort.value;
+          const sorted = [...cards].sort((a, b) => {
+            const A = a.dataset;
+            const B = b.dataset;
+            if (mode === "name") return A.title.localeCompare(B.title, "zh-Hans-CN");
+            if (mode === "size") return Number(B.size) - Number(A.size);
+            if (mode === "group") {
+              return A.group.localeCompare(B.group, "zh-Hans-CN") || Number(A.order) - Number(B.order);
+            }
+            if (mode === "pushed") return B.pushed.localeCompare(A.pushed);
+            return Number(A.order) - Number(B.order);
+          });
+          for (const c of sorted) grid.appendChild(c);
+        };
+
+        const apply = () => {
+          const kw = q.value.trim().toLowerCase();
+          const g = fGroup.value;
+          const onlyOn = fOnline.checked;
+          let shown = 0;
+          for (const c of cards) {
+            const ok =
+              (!kw || c.dataset.search.includes(kw)) &&
+              (!g || c.dataset.group === g) &&
+              (!onlyOn || state.get(c.dataset.url) === "on");
+            c.hidden = !ok;
+            if (ok) shown += 1;
+          }
+          fCount.textContent = `${shown} / ${cards.length}`;
+          empty.hidden = shown !== 0;
+          sortCards();
+        };
+
+        q.addEventListener("input", apply);
+        fGroup.addEventListener("change", apply);
+        fSort.addEventListener("change", apply);
+        fOnline.addEventListener("change", apply);
+        $("#btnReset").addEventListener("click", () => {
+          q.value = "";
+          fGroup.value = "";
+          fSort.value = "order";
+          fOnline.checked = false;
+          selectNav("");
+          apply();
+        });
+
+        /* 左侧导航 = 分类筛选 */
+        const navBtns = $$("#navGroups button");
+        const selectNav = (group) => {
+          for (const b of navBtns) b.classList.toggle("on", b.dataset.group === group);
+        };
+        for (const b of navBtns) {
+          b.addEventListener("click", () => {
+            fGroup.value = b.dataset.group;
+            selectNav(b.dataset.group);
+            apply();
+            $("#gridBox").scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
+        fGroup.addEventListener("change", () => selectNav(fGroup.value));
+
+        /* / 聚焦搜索 */
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "/" && document.activeElement !== q && !/input|textarea|select/i.test(document.activeElement.tagName)) {
+            e.preventDefault();
+            q.focus();
+          }
+        });
+
+        apply();
+        runProbe();
+      })();
+    </script>
+  </body>
+</html>

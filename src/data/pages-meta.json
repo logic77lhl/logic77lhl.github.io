@@ -1,0 +1,87 @@
+{
+  "owner": "logic77lhl",
+  "note": "手写元数据：标题、一句话、分类、封面、排序。脚本只从这里取「人话」，其余字段（更新时间、语言、体积）每次同步都从 GitHub API 重取。",
+  "groups": ["主站", "数据", "学习", "内容"],
+  "sites": {
+    "logic77lhl.github.io": {
+      "title": "十三个尝试",
+      "tagline": "主站：做得到，和值得做，不是一回事",
+      "group": "主站",
+      "cover": "hub.png",
+      "stack": ["Astro", "内容站"],
+      "order": 0
+    },
+    "competition-radar": {
+      "title": "参赛雷达",
+      "tagline": "每天采集在办的 AI / AI4S 竞赛，只报变化",
+      "group": "数据",
+      "cover": "competition-radar.png",
+      "stack": ["Python", "GitHub Actions"],
+      "order": 10
+    },
+    "daily-stock-metrics": {
+      "title": "市场洞察 · 每日指标",
+      "tagline": "A 股 / ETF / 港股通的 KDJ、双均线、PE/PB 分位每日快照",
+      "group": "数据",
+      "cover": "daily-stock-metrics.png",
+      "stack": ["Python", "GitHub Actions"],
+      "order": 20
+    },
+    "star-pulse": {
+      "title": "GitHub 星耀榜",
+      "tagline": "每天给 800 个项目拍一张星数快照，按周增排名",
+      "group": "数据",
+      "cover": "star-pulse.png",
+      "stack": ["Python 标准库", "GitHub Actions"],
+      "order": 30
+    },
+    "stanford-ai-courses": {
+      "title": "Stanford 课程地图",
+      "tagline": "55 门 AI / ML / Agent 课程速览，另附 6 条学习路径",
+      "group": "学习",
+      "cover": "stanford-ai-courses.png",
+      "stack": ["Python", "静态站点"],
+      "order": 40
+    },
+    "word-checkin": {
+      "title": "词途 · 背单词打卡",
+      "tagline": "四六级 / 考研 / 雅思 12,254 词，打开就能背，进度存本地",
+      "group": "学习",
+      "cover": "word-checkin.png",
+      "stack": ["单文件 HTML", "localStorage"],
+      "order": 50
+    },
+    "hf-quest": {
+      "title": "HF 探索打卡",
+      "tagline": "Hugging Face 系统学习路径，单文件 + 云同步打卡",
+      "group": "学习",
+      "cover": "hf-quest.png",
+      "stack": ["单文件 HTML", "Gist 同步"],
+      "order": 60
+    },
+    "ai-atlas": {
+      "title": "AI 系统地图",
+      "tagline": "59 个概念的来路、现状与边界，一页离线看完",
+      "group": "学习",
+      "cover": "ai-atlas.png",
+      "stack": ["单文件 HTML", "离线可用"],
+      "order": 70
+    },
+    "ai-knowledge-base": {
+      "title": "AI 知识库",
+      "tagline": "从基础概念到前沿技术，VitePress 文档站",
+      "group": "学习",
+      "cover": "ai-knowledge-base.png",
+      "stack": ["VitePress", "Markdown"],
+      "order": 80
+    },
+    "film-annual": {
+      "title": "电影年鉴 1895—2026",
+      "tagline": "132 年片单、IMDb 年度 Top 30、华语 20 部",
+      "group": "内容",
+      "cover": "film-annual.png",
+      "stack": ["JavaScript", "数据可视化"],
+      "order": 90
+    }
+  }
+}

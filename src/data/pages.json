@@ -1,0 +1,267 @@
+{
+  "owner": "logic77lhl",
+  "generatedAt": "2026-11-17T06:13:04.800Z",
+  "count": 10,
+  "sites": [
+    {
+      "repo": "logic77lhl/logic77lhl.github.io",
+      "name": "logic77lhl.github.io",
+      "url": "https://logic77lhl.github.io/",
+      "title": "十三个尝试",
+      "tagline": "主站：做得到，和值得做，不是一回事",
+      "group": "主站",
+      "cover": "hub.png",
+      "stack": [
+        "Astro",
+        "内容站"
+      ],
+      "lang": "Astro",
+      "topics": [
+        "astro",
+        "github-pages",
+        "portfolio",
+        "static-site"
+      ],
+      "pushed": "2026-11-16",
+      "created": "2026-11-06",
+      "sizeKB": 1485,
+      "stars": 0,
+      "order": 0,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/competition-radar",
+      "name": "competition-radar",
+      "url": "https://logic77lhl.github.io/competition-radar/",
+      "title": "参赛雷达",
+      "tagline": "每天采集在办的 AI / AI4S 竞赛，只报变化",
+      "group": "数据",
+      "cover": "competition-radar.png",
+      "stack": [
+        "Python",
+        "GitHub Actions"
+      ],
+      "lang": "JavaScript",
+      "topics": [],
+      "pushed": "2026-11-16",
+      "created": "2026-11-16",
+      "sizeKB": 314,
+      "stars": 0,
+      "order": 10,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/daily-stock-metrics",
+      "name": "daily-stock-metrics",
+      "url": "https://logic77lhl.github.io/daily-stock-metrics/",
+      "title": "市场洞察 · 每日指标",
+      "tagline": "A 股 / ETF / 港股通的 KDJ、双均线、PE/PB 分位每日快照",
+      "group": "数据",
+      "cover": "daily-stock-metrics.png",
+      "stack": [
+        "Python",
+        "GitHub Actions"
+      ],
+      "lang": "Python",
+      "topics": [
+        "data-pipeline",
+        "github-actions",
+        "python",
+        "quant",
+        "stock"
+      ],
+      "pushed": "2026-11-17",
+      "created": "2026-08-26",
+      "sizeKB": 40554,
+      "stars": 0,
+      "order": 20,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/star-pulse",
+      "name": "star-pulse",
+      "url": "https://logic77lhl.github.io/star-pulse/",
+      "title": "GitHub 星耀榜",
+      "tagline": "每天给 800 个项目拍一张星数快照，按周增排名",
+      "group": "数据",
+      "cover": "star-pulse.png",
+      "stack": [
+        "Python 标准库",
+        "GitHub Actions"
+      ],
+      "lang": "Python",
+      "topics": [
+        "data-visualization",
+        "github-actions",
+        "github-stars",
+        "github-trending",
+        "open-source-analytics",
+        "python"
+      ],
+      "pushed": "2026-11-17",
+      "created": "2026-09-14",
+      "sizeKB": 8418,
+      "stars": 0,
+      "order": 30,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/stanford-ai-courses",
+      "name": "stanford-ai-courses",
+      "url": "https://logic77lhl.github.io/stanford-ai-courses/",
+      "title": "Stanford 课程地图",
+      "tagline": "55 门 AI / ML / Agent 课程速览，另附 6 条学习路径",
+      "group": "学习",
+      "cover": "stanford-ai-courses.png",
+      "stack": [
+        "Python",
+        "静态站点"
+      ],
+      "lang": "Python",
+      "topics": [
+        "ai-agents",
+        "artificial-intelligence",
+        "courses",
+        "education",
+        "llm",
+        "machine-learning",
+        "stanford"
+      ],
+      "pushed": "2026-11-12",
+      "created": "2026-10-30",
+      "sizeKB": 4594,
+      "stars": 0,
+      "order": 40,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/word-checkin",
+      "name": "word-checkin",
+      "url": "https://logic77lhl.github.io/word-checkin/",
+      "title": "词途 · 背单词打卡",
+      "tagline": "四六级 / 考研 / 雅思 12,254 词，打开就能背，进度存本地",
+      "group": "学习",
+      "cover": "word-checkin.png",
+      "stack": [
+        "单文件 HTML",
+        "localStorage"
+      ],
+      "lang": "HTML",
+      "topics": [
+        "javascript",
+        "language-learning",
+        "single-file",
+        "spaced-repetition",
+        "vocabulary"
+      ],
+      "pushed": "2026-11-09",
+      "created": "2026-10-29",
+      "sizeKB": 2492,
+      "stars": 0,
+      "order": 50,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/hf-quest",
+      "name": "hf-quest",
+      "url": "https://logic77lhl.github.io/hf-quest/",
+      "title": "HF 探索打卡",
+      "tagline": "Hugging Face 系统学习路径，单文件 + 云同步打卡",
+      "group": "学习",
+      "cover": "hf-quest.png",
+      "stack": [
+        "单文件 HTML",
+        "Gist 同步"
+      ],
+      "lang": "HTML",
+      "topics": [
+        "checklist",
+        "huggingface",
+        "learning",
+        "progress-tracking",
+        "single-file"
+      ],
+      "pushed": "2026-11-09",
+      "created": "2026-10-28",
+      "sizeKB": 396,
+      "stars": 0,
+      "order": 60,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/ai-atlas",
+      "name": "ai-atlas",
+      "url": "https://logic77lhl.github.io/ai-atlas/",
+      "title": "AI 系统地图",
+      "tagline": "59 个概念的来路、现状与边界，一页离线看完",
+      "group": "学习",
+      "cover": "ai-atlas.png",
+      "stack": [
+        "单文件 HTML",
+        "离线可用"
+      ],
+      "lang": "HTML",
+      "topics": [
+        "ai",
+        "data-visualization",
+        "knowledge-map",
+        "learning",
+        "static-site"
+      ],
+      "pushed": "2026-11-09",
+      "created": "2026-10-29",
+      "sizeKB": 120,
+      "stars": 0,
+      "order": 70,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/ai-knowledge-base",
+      "name": "ai-knowledge-base",
+      "url": "https://logic77lhl.github.io/ai-knowledge-base/",
+      "title": "AI 知识库",
+      "tagline": "从基础概念到前沿技术，VitePress 文档站",
+      "group": "学习",
+      "cover": "ai-knowledge-base.png",
+      "stack": [
+        "VitePress",
+        "Markdown"
+      ],
+      "lang": "",
+      "topics": [],
+      "pushed": "2026-11-06",
+      "created": "2026-09-08",
+      "sizeKB": 42,
+      "stars": 0,
+      "order": 80,
+      "note": ""
+    },
+    {
+      "repo": "logic77lhl/film-annual",
+      "name": "film-annual",
+      "url": "https://logic77lhl.github.io/film-annual/",
+      "title": "电影年鉴 1895—2026",
+      "tagline": "132 年片单、IMDb 年度 Top 30、华语 20 部",
+      "group": "内容",
+      "cover": "film-annual.png",
+      "stack": [
+        "JavaScript",
+        "数据可视化"
+      ],
+      "lang": "JavaScript",
+      "topics": [
+        "film",
+        "github-pages",
+        "movie",
+        "static-site",
+        "yearbook"
+      ],
+      "pushed": "2026-11-09",
+      "created": "2026-10-27",
+      "sizeKB": 11164,
+      "stars": 0,
+      "order": 90,
+      "note": ""
+    }
+  ]
+}

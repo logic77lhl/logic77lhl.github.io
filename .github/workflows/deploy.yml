@@ -3,6 +3,9 @@ name: deploy
 on:
   push:
     branches: [main]
+  # 每天重跑一次站点同步：新增的 Pages 仓库、变化的体积/更新时间都会自动进 /sites/
+  schedule:
+    - cron: "30 1 * * *"
   workflow_dispatch:
 
 permissions:
@@ -19,6 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # 同步「全部 Pages 站点」清单。失败不挡部署：pages.json 是提交在仓库里的，
+      # 上一次成功的快照仍然能构建，宁可用旧数据也不要把站点发不出去。
+      - name: sync pages index
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/sync-pages.mjs
 
       - uses: actions/setup-node@v4
         with:

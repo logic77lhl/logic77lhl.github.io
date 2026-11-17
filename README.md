@@ -15,6 +15,7 @@
 - **一页看全**：按「学习 / 工具 / 数据 / 内容」分组，每张卡有真实界面截图；中间一条时间线，按建仓日排
 - **每个项目一页**：页头三个数字，正文写原来的样子、怎么做到的、没推过去的部分、现在怎么看
 - **数据自动更新**：stars、最后一次提交、主语言每天由 Actions 从 GitHub API 刷新
+- **全部站点一屏**：`/sites/` 把名下所有开了 Pages 的仓库聚成一页——截图、分类、在线状态、体积和更新时间，新开的 Pages 仓库第二天自动上榜
 
 ## 技术栈
 
@@ -40,15 +41,19 @@ src/
 ├─ content/writing/*.md       # 写作：笔记 / 整理 / 技能 / 随笔
 ├─ data/stats.json            # 自动刷新的 stars / 更新时间 / 语言
 ├─ data/timeline.json         # 首页时间线：建仓日 + slug + 标题 + 分组
+├─ data/pages-meta.json       # /sites/ 手写的部分：标题 / 一句话 / 分类 / 封面 / 排序
+├─ data/pages.json            # /sites/ 生成的部分：URL / 更新时间 / 语言 / 体积（脚本写）
 ├─ assets/covers/*.png        # 真实界面截图（1920×1200，16:10）
 ├─ components/                # Cover、ProjectCard
 ├─ layouts/Base.astro
 └─ pages/
    ├─ index.astro             # 首页
    ├─ projects/[slug].astro   # 项目详情页
+   ├─ sites/index.astro       # 全部站点聚合（仪表盘：统计条 / 筛选 / 卡片 / 数据表）
    ├─ writing/index.astro     # 写作列表（按年分组）
    └─ writing/[slug].astro    # 文章页
 scripts/refresh-stats.mjs      # 抓 GitHub API，只改 stats.json
+scripts/sync-pages.mjs         # 抓 GitHub API，只改 pages.json（只认 has_pages 的仓库）
 ```
 
 ## 本地开发
@@ -133,6 +138,31 @@ draft: false              # true 就不出现在列表里
 - 有外部产物（报告、repo、skill 文档）就填 `link`，正文只写「为什么」和「踩了什么」
 - 首页「写下来的」自动取最近 3 篇，不需要手动维护
 
+## 全部站点聚合 /sites/
+
+名下有一堆仓库，各自开着 Pages，散在不同的子路径上。`/sites/` 把它们聚成一页：左边按分类过，
+中间是带真实截图的卡片，下面是可扫读的数据表（状态 / 最近更新 / 语言 / 体积）。
+视觉语言借的是本地控制台那套深色仪表盘：冷石墨底、单一靛蓝强调、等宽数字承载观测值。
+
+数据分两层，别混：
+
+| 文件 | 来源 | 内容 |
+| --- | --- | --- |
+| `src/data/pages-meta.json` | 手写 | 标题、一句话、分类、封面文件名、排序 |
+| `src/data/pages.json` | `npm run pages` 生成 | URL、`pushed_at`、语言、仓库体积、topics |
+
+脚本请求 `api.github.com/users/logic77lhl/repos?type=owner` → 只留 `has_pages: true` →
+按 `pages-meta.json` 覆盖人话字段。`meta` 里没有的新仓库会**自动上榜**：标题先用仓库名，
+分类按 topics / 描述里的关键词猜（数据 / 学习 / 内容，猜不出就归「工具」）。想改文案就补一条 meta。
+
+```bash
+npm run pages    # 刷新 src/data/pages.json（需要联网，不需要 token；有 GITHUB_TOKEN 就用）
+```
+
+页面上做了三件客户端的事：搜索（标题、描述、技术栈、topics）、分类/排序/只看在线、在线状态探测。
+探测是 `fetch(url, { mode: "no-cors" })` + 8s 超时——**只能判断「连得上」**，分不出 200 和 404，
+跨域也拿不到状态码和响应时间。想更严格就得有自己的探针服务，这个静态站不做。
+
 ## 自动更新
 
 `.github/workflows/refresh.yml` 每天 04:00 UTC 跑一次：
@@ -141,7 +171,10 @@ draft: false              # true 就不出现在列表里
 - 某个仓库请求失败时**保留上一次的值**，不让页面出现 0 或空白
 - 有变化才 commit，避免空提交
 
-`.github/workflows/deploy.yml` 在 push 到 `main` 时构建并部署到 GitHub Pages。
+`.github/workflows/deploy.yml` 在 push 到 `main` 时构建并部署到 GitHub Pages；
+它同时带一个每天 01:30 UTC 的 cron，并在构建前跑 `node scripts/sync-pages.mjs`，
+所以 `/sites/` 的清单每天自动刷新，新开的 Pages 仓库不用手改就能上榜。
+同步失败不挡部署（`continue-on-error`）：`pages.json` 提交在仓库里，旧快照照样能构建。
 
 ## 部署（只需一次）
 
